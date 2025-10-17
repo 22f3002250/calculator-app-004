@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Simple Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --accent: #3b82f6;
+      --accent-2: #22d3ee;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --ring: rgba(59,130,246,0.5);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(34,211,238,0.12), transparent 60%),
+                  radial-gradient(1000px 700px at 90% 20%, rgba(59,130,246,0.10), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+      overflow: hidden;
+      backdrop-filter: blur(6px);
+    }
+    .header {
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.0));
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+    }
+    .logo {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background:
+        radial-gradient(120% 120% at 20% 20%, var(--accent-2), transparent 60%),
+        radial-gradient(120% 120% at 80% 30%, var(--accent), transparent 60%),
+        #0b1220;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: inset 0 0 20px rgba(59,130,246,0.2);
+    }
+    .title {
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .body {
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+    }
+    .row {
+      display: grid;
+      gap: 10px;
+    }
+    .inputs {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 540px) {
+      .inputs {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #0b1220;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.12);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--ring);
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+    button {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: #0b1220;
+      color: var(--text);
+      padding: 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.05s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+    }
+    button:hover {
+      background: #0d1526;
+      border-color: rgba(255,255,255,0.18);
+    }
+    button:active {
+      transform: translateY(1px);
+    }
+    .op { background: linear-gradient(180deg, rgba(59,130,246,0.18), rgba(59,130,246,0.04)); }
+    .op:hover { background: linear-gradient(180deg, rgba(59,130,246,0.28), rgba(59,130,246,0.06)); }
+    .clear { background: linear-gradient(180deg, rgba(239,68,68,0.18), rgba(239,68,68,0.04)); border-color: rgba(239,68,68,0.25); }
+    .clear:hover { background: linear-gradient(180deg, rgba(239,68,68,0.28), rgba(239,68,68,0.06)); }
+    .result {
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #0b1220;
+      border: 1px solid rgba(255,255,255,0.12);
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .result .label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .result .value {
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: 0.2px;
+    }
+    .result.success .value { color: var(--success); }
+    .result.error .value { color: var(--danger); }
+    .hint {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-align: center;
+      margin-top: 4px;
+    }
+    .footer {
+      padding: 14px 20px;
+      border-top: 1px solid rgba(255,255,255,0.10);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: #0b1220;
+      color: var(--text);
+      margin: 0 2px;
+      font-size: 0.85em;
+    }
+    .sr-only {
+      position: absolute !important;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0);
+      white-space: nowrap; border: 0;
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="application" aria-label="Simple Calculator">
+    <div class="header">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <div class="title">Simple Calculator</div>
+        <div class="subtitle">Fast +, −, ×, ÷ with keyboard support</div>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="row inputs">
+        <div>
+          <label for="inputA">First number</label>
+          <input id="inputA" type="number" inputmode="decimal" step="any" placeholder="e.g. 12.5" aria-label="First number">
+        </div>
+        <div>
+          <label for="inputB">Second number</label>
+          <input id="inputB" type="number" inputmode="decimal" step="any" placeholder="e.g. 3" aria-label="Second number">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="buttons">
+          <button class="op" data-op="+"
+                  title="Add (shortcut: +)">
+            +
+            <span class="sr-only">Add</span>
+          </button>
+          <button class="op" data-op="-"
+                  title="Subtract (shortcut: -)">
+            −
+            <span class="sr-only">Subtract</span>
+          </button>
+          <button class="op" data-op="*"
+                  title="Multiply (shortcut: *)">
+            ×
+            <span class="sr-only">Multiply</span>
+          </button>
+          <button class="op" data-op="/"
+                  title="Divide (shortcut: /)">
+            ÷
+            <span class="sr-only">Divide</span>
+          </button>
+          <button class="clear" id="clearBtn" title="Clear inputs and result">Clear</button>
+        </div>
+        <div class="hint">
+          Tip: Use keyboard shortcuts
+          <span class="kbd">+</span>
+          <span class="kbd">-</span>
+          <span class="kbd">*</span>
+          <span class="kbd">/</span> or press <span class="kbd">Enter</span> to repeat last operation.
+        </div>
+      </div>
+
+      <div id="resultPanel" class="result" aria-live="polite" aria-atomic="true">
+        <div class="label">Result</div>
+        <div id="resultText" class="value">—</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>MIT License</div>
+      <div>© 2025 SimpleCalc</div>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const inputA = document.getElementById('inputA');
+      const inputB = document.getElementById('inputB');
+      const resultPanel = document.getElementById('resultPanel');
+      const resultText = document.getElementById('resultText');
+      const clearBtn = document.getElementById('clearBtn');
+      const opButtons = Array.from(document.querySelectorAll('button.op'));
+      let lastOp = '+'; // default operation for Enter
+
+      function parseNumber(value) {
+        const n = parseFloat(value);
+        return Number.isFinite(n) ? n : NaN;
+      }
+
+      function formatNumber(n) {
+        if (!Number.isFinite(n)) return '∞';
+        // Reduce floating point noise
+        if (Number.isInteger(n)) return n.toString();
+        // toPrecision then trim trailing zeros and possible trailing dot
+        let s = n.toPrecision(12);
+        s = s.replace(/(\.\d*?[1-9])0+$/,'$1').replace(/\.0+$/,'').replace(/\.$/,'');
+        return s;
+      }
+
+      function showResult(text, isError = false) {
+        resultText.textContent = text;
+        resultPanel.classList.toggle('error', isError);
+        resultPanel.classList.toggle('success', !isError && text !== '—');
+      }
+
+      function compute(op) {
+        const a = parseNumber(inputA.value);
+        const b = parseNumber(inputB.value);
+
+        if (Number.isNaN(a) || Number.isNaN(b)) {
+          showResult('Please enter valid numbers.', true);
+          return;
+        }
+
+        let res;
+        switch (op) {
+          case '+': res = a + b; break;
+          case '-': res = a - b; break;
+          case '*': res = a * b; break;
+          case '/':
+            if (b === 0) {
+              showResult('Error: division by zero.', true);
+              return;
+            }
+            res = a / b; break;
+          default: showResult('Unknown operation.', true); return;
+        }
+
+        lastOp = op;
+        const symbol = op === '*' ? '×' : (op === '/' ? '÷' : op);
+        showResult(`${formatNumber(a)} ${symbol} ${formatNumber(b)} = ${formatNumber(res)}`, false);
+      }
+
+      // Wire up buttons
+      opButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const op = btn.getAttribute('data-op');
+          compute(op);
+        });
+      });
+
+      // Clear
+      clearBtn.addEventListener('click', () => {
+        inputA.value = '';
+        inputB.value = '';
+        showResult('—', false);
+        inputA.focus();
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        const key = e.key;
+        if (key === '+' || key === '-' || key === '*' || key === '/') {
+          e.preventDefault();
+          compute(key);
+        } else if (key === 'Enter') {
+          e.preventDefault();
+          compute(lastOp);
+        }
+      });
+
+      // Autofocus first input on load for quick entry
+      window.addEventListener('DOMContentLoaded', () => inputA.focus());
+    })();
+  </script>
+</body>
+</html>
